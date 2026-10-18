@@ -434,4 +434,8 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
+# Ne pas ignorer glfw3.lib ou le dossier contenant les libs de glfw
+!**/glfw3.lib
+!**/libs/
+
 # End of https://www.toptal.com/developers/gitignore/api/c++,visualstudio
