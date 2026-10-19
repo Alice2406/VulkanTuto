@@ -5,14 +5,17 @@
 class VulkanInstance
 {
 public:
+
 	void CreateInstance();
 	void Destroy();
-	const vk::raii::Instance& GetInstance() const { return instance; }
+	vk::raii::Instance& GetInstance() { return instance; }
 
 private:
+
 	vk::raii::Context context;
 	vk::raii::Instance instance = nullptr;
 	vk::raii::DebugUtilsMessengerEXT debugMessenger = nullptr;
+
 	std::vector<const char*> GetRequiredExtensions();
 	std::vector<const char*> GetRequiredLayers();
 	void SetupDebugCallback();

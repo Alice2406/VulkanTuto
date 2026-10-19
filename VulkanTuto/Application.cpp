@@ -34,17 +34,11 @@ void Application::InitWindow()
 void Application::InitVulkan()
 {
     renderer.Init(window);
-    renderer.createSurface(window);
-    renderer.pickPhysicalDevice();
-    renderer.createLogicalDevice();
-	renderer.createSwapChain(window);
-    renderer.createImageViews();
 }
 
 void Application::DestroyWindow()
 {
     glfwDestroyWindow(window);
-
     glfwTerminate();
 }
 
