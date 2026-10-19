@@ -1,7 +1,5 @@
 #pragma once
-#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
-#include "vulkan/vulkan_raii.hpp"
-#include "GLFW/glfw3.h"
+#include "Dependencies.h"
 
 class VulkanSwapChain
 {
@@ -9,7 +7,7 @@ public :
 
 	void Init(vk::raii::PhysicalDevice &physicalDevice, vk::raii::Device &device, vk::raii::SurfaceKHR &surface, GLFWwindow* window);
 	void Destroy();
-
+	vk::SurfaceFormatKHR& GetSurfaceFormat() { return swapChainSurfaceFormat; }
 private :
 
 	vk::raii::SwapchainKHR swapChain = nullptr;

@@ -152,10 +152,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
+    <ClCompile Include="VulkanPipeline.cpp" />
     <ClCompile Include="VulkanSwapChain.cpp" />
     <ClCompile Include="VulkanTuto.cpp" />
   </ItemGroup>
@@ -166,6 +166,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="VulkanDevice.h" />
     <ClInclude Include="VulkanInstance.h" />
+    <ClInclude Include="VulkanPipeline.h" />
     <ClInclude Include="VulkanSwapChain.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

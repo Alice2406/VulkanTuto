@@ -24,9 +24,6 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanInstance.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -34,6 +31,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="VulkanSwapChain.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanPipeline.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -57,6 +57,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="VulkanSwapChain.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanPipeline.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

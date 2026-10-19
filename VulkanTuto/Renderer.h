@@ -1,11 +1,9 @@
 #pragma once
-#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
-#include "vulkan/vulkan_raii.hpp"
-#include "GLFW/glfw3.h"
-
+#include "Dependencies.h"
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
+#include "VulkanPipeline.h"
 
 class Renderer
 {
@@ -17,5 +15,6 @@ private:
 	VulkanInstance vulkanInstance;
 	VulkanDevice vulkanDevice;
 	VulkanSwapChain vulkanSwapChain;
+	VulkanPipeline vulkanPipeline;
 };
 

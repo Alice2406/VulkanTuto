@@ -9,10 +9,12 @@ void Renderer::Init(GLFWwindow* window)
 	vulkanInstance.CreateInstance();
 	vulkanDevice.Init(vulkanInstance.GetInstance(), window);
 	vulkanSwapChain.Init(vulkanDevice.GetPhysicalDevice(), vulkanDevice.GetDevice(), vulkanDevice.GetSurface(), window);
+	vulkanPipeline.Init(vulkanDevice.GetDevice(), vulkanSwapChain.GetSurfaceFormat());
 }
 
 void Renderer::Destroy()
 {
+	//vulkanPipeline.Destroy();
 	//vulkanInstance.Destroy();
 	//vulkanDevice.Destroy();
 	//vulkanSwapChain.Destroy();
