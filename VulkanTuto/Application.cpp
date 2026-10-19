@@ -33,7 +33,7 @@ void Application::InitWindow()
 
 void Application::InitVulkan()
 {
-    renderer.CreateInstance();
+    renderer.Init(window);
     renderer.createSurface(window);
     renderer.pickPhysicalDevice();
     renderer.createLogicalDevice();
@@ -50,4 +50,5 @@ void Application::DestroyWindow()
 
 void Application::DestroyVulkan()
 {
+	renderer.Destroy();
 }
