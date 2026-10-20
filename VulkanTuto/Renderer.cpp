@@ -10,15 +10,21 @@ void Renderer::Init(GLFWwindow* window)
 	vulkanDevice.Init(vulkanInstance.GetInstance(), window);
 	vulkanSwapChain.Init(vulkanDevice.GetPhysicalDevice(), vulkanDevice.GetDevice(), vulkanDevice.GetSurface(), window);
 	vulkanPipeline.Init(vulkanDevice.GetDevice(), vulkanSwapChain.GetSurfaceFormat());
-	vulkanDraw.Init(vulkanDevice.GetQueueIndex(), vulkanDevice.GetDevice());
+	vulkanDraw.Init(vulkanDevice, vulkanSwapChain, vulkanPipeline);
+}
+
+void Renderer::DrawFrame()
+{
+	vulkanDraw.drawFrame();
+}
+
+void Renderer::WaitIdle()
+{
+	vulkanDevice.GetDevice().waitIdle();
 }
 
 void Renderer::Destroy()
 {
-	//vulkanPipeline.Destroy();
-	//vulkanInstance.Destroy();
-	//vulkanDevice.Destroy();
-	//vulkanSwapChain.Destroy();
 }
 
 //Render Doc -> Debug GPU

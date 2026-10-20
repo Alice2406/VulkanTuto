@@ -11,7 +11,9 @@ void Application::Run()
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        renderer.DrawFrame();
     }
+    renderer.WaitIdle();
 }
 
 void Application::Destroy()

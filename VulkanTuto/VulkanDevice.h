@@ -10,6 +10,7 @@ public:
 	vk::raii::Device& GetDevice() { return device; }
 	vk::raii::SurfaceKHR& GetSurface() { return surface; }
 	uint32_t& GetQueueIndex() { return queueIndex; }
+	vk::raii::Queue& GetQueue() { return graphicsQueue; }
 private:
 	uint32_t queueIndex = ~0;
 	vk::raii::PhysicalDevice physicalDevice = nullptr;

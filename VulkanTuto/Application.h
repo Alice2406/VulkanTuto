@@ -1,6 +1,8 @@
 #pragma once
 #include "Dependencies.h"
 #include "Renderer.h"
+#include "VulkanDraw.h"
+#include "VulkanDevice.h"
 class Application
 {
 public :

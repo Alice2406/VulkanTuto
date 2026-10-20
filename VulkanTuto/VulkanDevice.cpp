@@ -43,6 +43,7 @@ bool VulkanDevice::isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevi
 		vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
 	bool supportsRequiredFeatures = features.template get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters &&
 		features.template get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering &&
+		features.template get<vk::PhysicalDeviceVulkan13Features>().synchronization2 &&
 		features.template get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState;
 
 	return supportsVulkan1_3 && supportsGraphics && supportsAllRequiredExtensions && supportsRequiredFeatures;
@@ -105,7 +106,7 @@ void VulkanDevice::createLogicalDevice()
 	> featureChain = {
 		{},
 		{.shaderDrawParameters = true},
-		{.dynamicRendering = true},
+		{ .synchronization2 = true, .dynamicRendering = true },
 		{.extendedDynamicState = true}
 	};
 
