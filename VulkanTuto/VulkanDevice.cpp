@@ -121,7 +121,6 @@ void VulkanDevice::createLogicalDevice()
 	device = vk::raii::Device(physicalDevice, deviceCreateInfo);
 	graphicsQueue = device.getQueue(graphicsQueueFamilyIndex, 0);
 
-	uint32_t queueIndex = ~0;
 	for (uint32_t i = 0; i < queueFamilyProperties.size(); i++)
 	{
 		if ((queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics) &&

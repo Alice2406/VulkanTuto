@@ -10,6 +10,7 @@ void Renderer::Init(GLFWwindow* window)
 	vulkanDevice.Init(vulkanInstance.GetInstance(), window);
 	vulkanSwapChain.Init(vulkanDevice.GetPhysicalDevice(), vulkanDevice.GetDevice(), vulkanDevice.GetSurface(), window);
 	vulkanPipeline.Init(vulkanDevice.GetDevice(), vulkanSwapChain.GetSurfaceFormat());
+	vulkanDraw.Init(vulkanDevice.GetQueueIndex(), vulkanDevice.GetDevice());
 }
 
 void Renderer::Destroy()
