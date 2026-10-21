@@ -83,6 +83,7 @@ void VulkanDraw::drawFrame(GLFWwindow* window)
         assert(result == vk::Result::eTimeout || result == vk::Result::eNotReady);
         throw std::runtime_error("failed to acquire swap chain image!");
     }
+
     commandBuffers[frameIndex].reset();
     recordCommandBuffer(imageIndex);
 
@@ -100,19 +101,35 @@ void VulkanDraw::drawFrame(GLFWwindow* window)
     };
 
     queue.submit(submitInfo, *inFlightFences[frameIndex]);
-    const vk::PresentInfoKHR presentInfoKHR{ .waitSemaphoreCount = 1,
-                                                .pWaitSemaphores = &*renderFinishedSemaphores[imageIndex],
-                                                .swapchainCount = 1,
-                                                .pSwapchains = &*swapChain,
-                                                .pImageIndices = &imageIndex };
-    result = queue.presentKHR(presentInfoKHR);
-    if ((result == vk::Result::eSuboptimalKHR) || (result == vk::Result::eErrorOutOfDateKHR) || framebufferResized)
+
+    const vk::PresentInfoKHR presentInfoKHR{
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &*renderFinishedSemaphores[imageIndex],
+        .swapchainCount = 1,
+        .pSwapchains = &*swapChain,
+        .pImageIndices = &imageIndex
+    };
+
+    vk::Result presentResult;
+    try
+    {
+        presentResult = queue.presentKHR(presentInfoKHR);
+    }
+    catch (const vk::OutOfDateKHRError&)
+    {
+        presentResult = vk::Result::eErrorOutOfDateKHR;
+    }
+
+    if (presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || framebufferResized)
     {
         framebufferResized = false;
         vulkanSwapChain->recreateSwapChain(vulkanDevice->GetPhysicalDevice(), device, vulkanDevice->GetSurface(), window);
     }
-    else
-        assert(result == vk::Result::eSuccess);
+    else if (presentResult != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
     frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 

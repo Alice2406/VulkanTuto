@@ -34,7 +34,7 @@ void Application::InitWindow()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "hello", nullptr, nullptr);
-    glfwSetWindowUserPointer(window, this);
+    glfwSetWindowUserPointer(window, &renderer);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 

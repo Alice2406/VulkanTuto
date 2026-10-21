@@ -19,8 +19,8 @@ private:
 	Renderer renderer;
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
-		auto app = reinterpret_cast<VulkanDraw*>(glfwGetWindowUserPointer(window));
-		app->framebufferResized = true;
+		auto ren = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
+		ren->GetVulkanDraw().framebufferResized = true;
 	}
 	void InitWindow();
 	void InitVulkan();
