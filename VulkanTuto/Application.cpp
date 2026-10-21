@@ -1,5 +1,8 @@
 #include "Application.h"
 
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+
 void Application::Init()
 {
     InitWindow();
@@ -11,7 +14,7 @@ void Application::Run()
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        renderer.DrawFrame();
+        renderer.DrawFrame(window);
     }
     renderer.WaitIdle();
 }
@@ -28,9 +31,11 @@ void Application::InitWindow()
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    window = glfwCreateWindow(800, 600, "hello", nullptr, nullptr);
+    window = glfwCreateWindow(WIDTH, HEIGHT, "hello", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
 void Application::InitVulkan()

@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "VulkanDraw.h"
 #include "VulkanDevice.h"
+
 class Application
 {
 public :
@@ -16,6 +17,11 @@ public :
 	void Destroy();
 private:
 	Renderer renderer;
+	static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		auto app = reinterpret_cast<VulkanDraw*>(glfwGetWindowUserPointer(window));
+		app->framebufferResized = true;
+	}
 	void InitWindow();
 	void InitVulkan();
 	void DestroyWindow();

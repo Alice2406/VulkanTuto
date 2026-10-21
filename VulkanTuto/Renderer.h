@@ -10,7 +10,7 @@ class Renderer
 {
 public:
 	void Init(GLFWwindow* window);
-	void DrawFrame();
+	void DrawFrame(GLFWwindow* window);
 	void WaitIdle();
 	void Destroy();
 

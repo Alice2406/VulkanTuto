@@ -10,12 +10,12 @@ void Renderer::Init(GLFWwindow* window)
 	vulkanDevice.Init(vulkanInstance.GetInstance(), window);
 	vulkanSwapChain.Init(vulkanDevice.GetPhysicalDevice(), vulkanDevice.GetDevice(), vulkanDevice.GetSurface(), window);
 	vulkanPipeline.Init(vulkanDevice.GetDevice(), vulkanSwapChain.GetSurfaceFormat());
-	vulkanDraw.Init(vulkanDevice, vulkanSwapChain, vulkanPipeline);
+	vulkanDraw.Init(vulkanDevice, vulkanSwapChain, vulkanPipeline, window);
 }
 
-void Renderer::DrawFrame()
+void Renderer::DrawFrame(GLFWwindow* window)
 {
-	vulkanDraw.drawFrame();
+	vulkanDraw.drawFrame(window);
 }
 
 void Renderer::WaitIdle()

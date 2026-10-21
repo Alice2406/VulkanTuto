@@ -10,6 +10,7 @@ void VulkanSwapChain::Init(vk::raii::PhysicalDevice &physicalDevice, vk::raii::D
 	createImageViews(device);
 }
 
+
 static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities)
 {
 	auto minImageCount = std::max(3u, surfaceCapabilities.minImageCount);
@@ -18,6 +19,31 @@ static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfac
 		minImageCount = surfaceCapabilities.maxImageCount;
 	}
 	return minImageCount;
+}
+
+void VulkanSwapChain::recreateSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, GLFWwindow* window)
+{
+	int width = 0;
+	int height = 0;
+	glfwGetFramebufferSize(window, &width, &height);
+	while ((width == 0 || height == 0) && !glfwWindowShouldClose(window))
+	{
+		glfwGetFramebufferSize(window, &width, &height);
+		glfwWaitEvents();
+	}
+	if (glfwWindowShouldClose(window))
+		return;
+	device.waitIdle();
+
+	cleanupSwapChain();
+	createSwapChain(physicalDevice, device, surface, window);
+	createImageViews(device);
+}
+
+void VulkanSwapChain::cleanupSwapChain()
+{
+	swapChainImageViews.clear();
+	swapChain = nullptr;
 }
 
 void VulkanSwapChain::createSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, GLFWwindow* window)

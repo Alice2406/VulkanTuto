@@ -6,6 +6,7 @@ class VulkanSwapChain
 public :
 
 	void Init(vk::raii::PhysicalDevice &physicalDevice, vk::raii::Device &device, vk::raii::SurfaceKHR &surface, GLFWwindow* window);
+	void recreateSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, GLFWwindow* window);
 	void Destroy();
 	vk::SurfaceFormatKHR& GetSurfaceFormat() { return swapChainSurfaceFormat; }
 	std::vector<vk::Image>& GetSwapChainImages() { return swapChainImages; }
@@ -21,6 +22,7 @@ private :
 	vk::SurfaceFormatKHR             swapChainSurfaceFormat;
 	vk::Extent2D swapChainExtent;
 
+	void cleanupSwapChain();
 	void createSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, GLFWwindow* window);
 	void createImageViews(vk::raii::Device& device);
 	vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
