@@ -2,6 +2,7 @@
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "VulkanPipeline.h"
+#include "VulkanVertex.h"
 #define GLFW_INCLUDE_VULKAN
 
 #include <iostream>
@@ -9,15 +10,20 @@
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-void VulkanDraw::Init(VulkanDevice& device, VulkanSwapChain& swapChain, VulkanPipeline& pipeline, GLFWwindow* window)
+void VulkanDraw::Init(VulkanDevice& device, VulkanSwapChain& swapChain, VulkanPipeline& pipeline, VulkanVertex& vertex,GLFWwindow* window)
 {
     vulkanDevice = &device;
     vulkanSwapChain = &swapChain;
     vulkanPipeline = &pipeline;
+    vulkanVertex = &vertex;
 
     createCommandPool();
+}
+
+void VulkanDraw::InitCommandBuffers()
+{
     createCommandBuffers();
-	createSyncObjects();
+    createSyncObjects();
 }
 
 void VulkanDraw::createCommandPool()
@@ -170,35 +176,14 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
         .colorAttachmentCount = 1,
         .pColorAttachments = &attachmentInfo };
 
+
     commandBuffer.beginRendering(renderingInfo);
-
-    commandBuffer.bindPipeline(
-        vk::PipelineBindPoint::eGraphics,
-        *graphicsPipeline
-    );
-
-    commandBuffer.setViewport(
-        0,
-        vk::Viewport(
-            0.0f,
-            0.0f,
-            static_cast<float>(swapChainExtent.width),
-            static_cast<float>(swapChainExtent.height),
-            0.0f,
-            1.0f
-        )
-    );
-
-    commandBuffer.setScissor(
-        0,
-        vk::Rect2D(
-            vk::Offset2D(0, 0),
-            swapChainExtent
-        )
-    );
-
-    commandBuffer.draw(3, 1, 0, 0);
-
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
+    commandBuffer.setViewport(0, vk::Viewport(0.0f, static_cast<float>(swapChainExtent.height), static_cast<float>(swapChainExtent.width), -static_cast<float>(swapChainExtent.height), 0.0f, 1.0f));
+    commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
+    commandBuffer.bindVertexBuffers(0, *vulkanVertex->GetVertexBuffer(), { 0 });
+    commandBuffer.bindIndexBuffer(*vulkanVertex->GetIndexBuffer(), 0, vk::IndexType::eUint16);
+    commandBuffer.drawIndexed(static_cast<uint32_t>(vulkanVertex->GetIndicesCount()), 1, 0, 0, 0);
     commandBuffer.endRendering();
 
     transition_image_layout(

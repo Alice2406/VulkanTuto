@@ -4,12 +4,15 @@
 class VulkanDevice;
 class VulkanSwapChain;
 class VulkanPipeline;
+class VulkanVertex;
 
 class VulkanDraw
 {
 public:
 
-	void Init(VulkanDevice& device,VulkanSwapChain& swapChain,VulkanPipeline& pipeline, GLFWwindow* window);
+	void Init(VulkanDevice& device,VulkanSwapChain& swapChain,VulkanPipeline& pipeline,VulkanVertex& vertex, GLFWwindow* window);
+	void InitCommandBuffers();
+	vk::raii::CommandPool& GetCommandPool() { return commandPool; }
 	void drawFrame(GLFWwindow* window);
 	void Destroy();
 	bool framebufferResized = false;
@@ -19,6 +22,7 @@ private:
 	VulkanDevice* vulkanDevice = nullptr;
 	VulkanSwapChain* vulkanSwapChain = nullptr;
 	VulkanPipeline* vulkanPipeline = nullptr;
+	VulkanVertex* vulkanVertex = nullptr;
 
 	uint32_t frameIndex = 0;
 	vk::raii::CommandPool commandPool = nullptr;

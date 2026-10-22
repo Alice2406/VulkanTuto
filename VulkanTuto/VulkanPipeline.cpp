@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "GLFW/glfw3.h"
+#include "Vertex.h"
 
 void VulkanPipeline::Init(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat)
 {
@@ -41,6 +42,12 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 		.module = shaderModule, 
 		.pName = "fragMain" };
 	vk::PipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+	auto                                     bindingDescription = Vertex::getBindingDescription();
+	auto                                     attributeDescriptions = Vertex::getAttributeDescriptions();
+	vk::PipelineVertexInputStateCreateInfo   vertexInputInfo{ .vertexBindingDescriptionCount = 1,
+															 .pVertexBindingDescriptions = &bindingDescription,
+															 .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+															 .pVertexAttributeDescriptions = attributeDescriptions.data() };
 
 	std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor }; //on va changer le viewport et le scissor à chaque frame
 	vk::PipelineDynamicStateCreateInfo dynamicState{ .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()), .pDynamicStates = dynamicStates.data() };
@@ -51,7 +58,7 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 	vk::PipelineRasterizationStateCreateInfo rasterizer{ .depthClampEnable = vk::False, //on ne veut pas que les fragments soient coupés à la limite du viewport
 														.rasterizerDiscardEnable = vk::False, 
 														.polygonMode = vk::PolygonMode::eFill,
-														.cullMode = vk::CullModeFlagBits::eBack,
+														.cullMode = vk::CullModeFlagBits::eNone,
 														.frontFace = vk::FrontFace::eClockwise, //on va dessiner les triangles dans le sens des aiguilles d'une montre
 														.depthBiasEnable = vk::False,
 														.lineWidth = 1.0f };

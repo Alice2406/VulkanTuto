@@ -5,6 +5,7 @@
 #include "VulkanSwapChain.h"
 #include "VulkanPipeline.h"
 #include "VulkanDraw.h"
+#include "VulkanVertex.h"
 
 class Renderer
 {
@@ -21,5 +22,6 @@ private:
 	VulkanSwapChain vulkanSwapChain;
 	VulkanPipeline vulkanPipeline;
 	VulkanDraw vulkanDraw;
+	VulkanVertex vulkanVertex;
 };
 
