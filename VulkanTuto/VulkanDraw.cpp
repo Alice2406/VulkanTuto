@@ -3,19 +3,24 @@
 #include "VulkanSwapChain.h"
 #include "VulkanPipeline.h"
 #include "VulkanVertex.h"
+#include "VulkanDescriptor.h"
 #define GLFW_INCLUDE_VULKAN
 
 #include <iostream>
 #include "GLFW/glfw3.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-void VulkanDraw::Init(VulkanDevice& device, VulkanSwapChain& swapChain, VulkanPipeline& pipeline, VulkanVertex& vertex,GLFWwindow* window)
+void VulkanDraw::Init(VulkanDevice& device, VulkanSwapChain& swapChain, VulkanPipeline& pipeline, VulkanVertex& vertex, VulkanDescriptor& descriptor, GLFWwindow* window)
 {
     vulkanDevice = &device;
     vulkanSwapChain = &swapChain;
     vulkanPipeline = &pipeline;
     vulkanVertex = &vertex;
+	vulkanDescriptor = &descriptor;
 
     createCommandPool();
 }
@@ -90,6 +95,7 @@ void VulkanDraw::drawFrame(GLFWwindow* window)
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
+    updateUniformBuffer(frameIndex);
     commandBuffers[frameIndex].reset();
     recordCommandBuffer(imageIndex);
 
@@ -145,6 +151,7 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
     auto& swapChainImageViews = vulkanSwapChain->GetSwapChainImageViews();
     auto swapChainExtent = vulkanSwapChain->GetSwapChainExtent();
     auto& graphicsPipeline = vulkanPipeline->GetGraphicsPipeline();
+	auto& pipelineLayout = vulkanPipeline->GetPipelineLayout();
     auto& commandBuffer = commandBuffers[frameIndex];
 
 	commandBuffer.begin({});
@@ -183,6 +190,7 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
     commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), swapChainExtent));
     commandBuffer.bindVertexBuffers(0, *vulkanVertex->GetVertexBuffer(), { 0 });
     commandBuffer.bindIndexBuffer(*vulkanVertex->GetIndexBuffer(), 0, vk::IndexType::eUint16);
+	commandBuffers[frameIndex].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, vulkanPipeline->GetPipelineLayout(), 0, *vulkanDescriptor->GetDescriptorSets()[frameIndex], {});
     commandBuffer.drawIndexed(static_cast<uint32_t>(vulkanVertex->GetIndicesCount()), 1, 0, 0, 0);
     commandBuffer.endRendering();
 
@@ -197,6 +205,19 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
     );
 
     commandBuffer.end();
+}
+
+void VulkanDraw::updateUniformBuffer(uint32_t currentImage)
+{
+    auto swapChainExtent = vulkanSwapChain->GetSwapChainExtent();
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+	UniformBufferObject ubo{};
+    ubo.model = rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
+	memcpy(vulkanVertex->GetUniformBuffersMapped()[currentImage], &ubo, sizeof(ubo));
 }
 
 void VulkanDraw::transition_image_layout(uint32_t imageIndex, vk::ImageLayout old_layout, vk::ImageLayout new_layout, vk::AccessFlags2 src_access_mask, vk::AccessFlags2 dst_access_mask, vk::PipelineStageFlags2 src_stage_mask, vk::PipelineStageFlags2 dst_stage_mask)

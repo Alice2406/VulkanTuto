@@ -10,6 +10,8 @@ public:
 	vk::raii::Buffer& GetIndexBuffer() { return indexBuffer; }
 	std::size_t GetVertexCount() { return vertices.size(); }
 	std::size_t GetIndicesCount() { return indices.size(); }
+	std::vector<void*>& GetUniformBuffersMapped() { return uniformBuffersMapped; }
+	std::vector<vk::raii::Buffer>& GetUniformBuffers() { return uniformBuffers; }
 	void Destroy();
 
 private:
@@ -22,6 +24,8 @@ private:
 	const std::vector<uint16_t> indices = {
 	0, 1, 2, 2, 3, 0
 	};
+
+	void createUniformBuffers(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice);
 	void createVertexBuffer(vk::raii::Device &device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue);
 	std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice);
 	uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties, vk::raii::PhysicalDevice& physicalDevice);
@@ -32,5 +36,9 @@ private:
 	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
 	vk::raii::Buffer       indexBuffer = nullptr;
 	vk::raii::DeviceMemory indexBufferMemory = nullptr;
+
+	std::vector<vk::raii::Buffer> uniformBuffers;
+	std::vector<vk::raii::DeviceMemory> uniformBufferMemory;
+	std::vector<void*> uniformBuffersMapped;
 };
 

@@ -3,12 +3,13 @@
 
 #include <iostream>
 #include "GLFW/glfw3.h"
-
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 void VulkanVertex::Init(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
 {
 	createVertexBuffer(device, physicalDevice, commandPool, queue);
 	createIndexBuffer(device, physicalDevice, commandPool, queue);
+	createUniformBuffers(device, physicalDevice);
 }
 
 void VulkanVertex::createVertexBuffer(vk::raii::Device &device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
@@ -44,6 +45,19 @@ void VulkanVertex::createIndexBuffer(vk::raii::Device& device, vk::raii::Physica
 		createBuffer(bufferSize, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
 
 	copyBuffer(stagingBuffer, indexBuffer, bufferSize, commandPool, device, queue);
+}
+
+void VulkanVertex::createUniformBuffers(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice)
+{
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
+		auto [buffer, bufferMemory] =
+			createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, device, physicalDevice);
+		uniformBuffers.emplace_back(std::move(buffer));
+		uniformBufferMemory.emplace_back(std::move(bufferMemory));
+		uniformBuffersMapped.emplace_back(uniformBufferMemory.back().mapMemory(0, bufferSize));
+	}
 }
 
 std::pair<vk::raii::Buffer, vk::raii::DeviceMemory> VulkanVertex::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice)

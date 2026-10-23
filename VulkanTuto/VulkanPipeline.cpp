@@ -8,6 +8,7 @@
 
 void VulkanPipeline::Init(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat)
 {
+	createDescriptorSetLayout(device);
 	createGraphicsPipeline(device, surfaceFormat);
 }
 
@@ -58,8 +59,8 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 	vk::PipelineRasterizationStateCreateInfo rasterizer{ .depthClampEnable = vk::False, //on ne veut pas que les fragments soient coupés à la limite du viewport
 														.rasterizerDiscardEnable = vk::False, 
 														.polygonMode = vk::PolygonMode::eFill,
-														.cullMode = vk::CullModeFlagBits::eNone,
-														.frontFace = vk::FrontFace::eClockwise, //on va dessiner les triangles dans le sens des aiguilles d'une montre
+														.cullMode = vk::CullModeFlagBits::eBack,
+														.frontFace = vk::FrontFace::eCounterClockwise, //on va dessiner les triangles dans le sens des aiguilles d'une montre
 														.depthBiasEnable = vk::False,
 														.lineWidth = 1.0f };
 
@@ -72,7 +73,11 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 	vk::PipelineColorBlendStateCreateInfo colorBlending{
 		.logicOpEnable = vk::False, .logicOp = vk::LogicOp::eCopy, .attachmentCount = 1, .pAttachments = &colorBlendAttachment };
 
-	vk::PipelineLayoutCreateInfo pipelineLayoutInfo{ .setLayoutCount = 0, .pushConstantRangeCount = 0 };
+	vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {
+	.setLayoutCount = 1,
+	.pSetLayouts = &*descriptorSetLayout,
+	.pushConstantRangeCount = 0
+	};
 	pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
 
 	vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &surfaceFormat.format };
@@ -91,4 +96,20 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 	{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &surfaceFormat.format } };
 
 	graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
+}
+
+void VulkanPipeline::createDescriptorSetLayout(vk::raii::Device& device)
+{
+	vk::DescriptorSetLayoutBinding uboLayoutBinding = {
+		.binding = 0,
+		.descriptorType = vk::DescriptorType::eUniformBuffer,
+		.descriptorCount = 1,
+		.stageFlags = vk::ShaderStageFlagBits::eVertex
+	};
+	vk::DescriptorSetLayoutCreateInfo layoutInfo = {
+		.bindingCount = 1,
+		.pBindings = &uboLayoutBinding
+	};
+	descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
+
 }

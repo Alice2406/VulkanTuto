@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="VulkanDescriptor.cpp" />
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanDraw.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Dependencies.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VulkanDescriptor.h" />
     <ClInclude Include="VulkanDevice.h" />
     <ClInclude Include="VulkanDraw.h" />
     <ClInclude Include="VulkanInstance.h" />
