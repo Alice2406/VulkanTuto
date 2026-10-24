@@ -2,28 +2,34 @@
 #include "Vertex.h"
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-void VulkanDescriptor::Init(vk::raii::Device &device, vk::raii::DescriptorSetLayout &descriptorSetLayout, std::vector<vk::raii::Buffer>& uniformBuffers)
+void VulkanDescriptor::Init(vk::raii::Device &device, vk::raii::DescriptorSetLayout &descriptorSetLayout, std::vector<vk::raii::Buffer>& uniformBuffers, vk::raii::ImageView &textureImageView, vk::raii::Sampler &textureSampler)
 {
 	createDescriptorPool(device);
-	createDescriptorSets(descriptorSetLayout, device, uniformBuffers);
+	createDescriptorSets(descriptorSetLayout, device, uniformBuffers, textureImageView, textureSampler);
 }
 
 void VulkanDescriptor::createDescriptorPool(vk::raii::Device &device)
 {
-	vk::DescriptorPoolSize poolSize{
-		.type = vk::DescriptorType::eUniformBuffer,
-		.descriptorCount = MAX_FRAMES_IN_FLIGHT
+	std::array<vk::DescriptorPoolSize, 2> poolSizes = {
+			vk::DescriptorPoolSize{
+				.type = vk::DescriptorType::eUniformBuffer,
+				.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT)
+			},
+			vk::DescriptorPoolSize{
+				.type = vk::DescriptorType::eCombinedImageSampler,
+				.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT)
+			}
 	};
 	vk::DescriptorPoolCreateInfo poolInfo{
 		.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-		.maxSets = MAX_FRAMES_IN_FLIGHT,
-		.poolSizeCount = 1,
-		.pPoolSizes = &poolSize
+		.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT),
+		.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+		.pPoolSizes = poolSizes.data()
 	};
-	descriptorPool = vk::raii::DescriptorPool(device, poolInfo);	
+	descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
 }
 
-void VulkanDescriptor::createDescriptorSets(vk::raii::DescriptorSetLayout &descriptorSetLayout, vk::raii::Device &device, std::vector<vk::raii::Buffer>& uniformBuffers)
+void VulkanDescriptor::createDescriptorSets(vk::raii::DescriptorSetLayout &descriptorSetLayout, vk::raii::Device &device, std::vector<vk::raii::Buffer>& uniformBuffers, vk::raii::ImageView &textureImageView, vk::raii::Sampler &textureSampler)
 {
 	std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *descriptorSetLayout);
 	vk::DescriptorSetAllocateInfo allocInfo{
@@ -34,20 +40,21 @@ void VulkanDescriptor::createDescriptorSets(vk::raii::DescriptorSetLayout &descr
 	descriptorSets = device.allocateDescriptorSets(allocInfo);
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		vk::DescriptorBufferInfo bufferInfo{
-			.buffer = uniformBuffers[i],
-			.offset = 0,
-			.range = sizeof(UniformBufferObject)
-		};
-		vk::WriteDescriptorSet descriptorWrite{
-			.dstSet = descriptorSets[i],
-			.dstBinding = 0,
-			.dstArrayElement = 0,
-			.descriptorCount = 1,
-			.descriptorType = vk::DescriptorType::eUniformBuffer,
-			.pBufferInfo = &bufferInfo
-		};
-		device.updateDescriptorSets({ descriptorWrite }, {});
+		vk::DescriptorBufferInfo bufferInfo{ .buffer = uniformBuffers[i], .offset = 0, .range = sizeof(UniformBufferObject) };
+		vk::DescriptorImageInfo  imageInfo{ .sampler = textureSampler, .imageView = textureImageView, .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal };
+		std::array<vk::WriteDescriptorSet, 2> descriptorWrites{ { { .dstSet = descriptorSets[i],
+														 .dstBinding = 0,
+														 .dstArrayElement = 0,
+														 .descriptorCount = 1,
+														 .descriptorType = vk::DescriptorType::eUniformBuffer,
+														 .pBufferInfo = &bufferInfo },
+														{ .dstSet = descriptorSets[i],
+														 .dstBinding = 1,
+														 .dstArrayElement = 0,
+														 .descriptorCount = 1,
+														 .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+														 .pImageInfo = &imageInfo } } };
+		device.updateDescriptorSets(descriptorWrites, {});
 	}
 }
 

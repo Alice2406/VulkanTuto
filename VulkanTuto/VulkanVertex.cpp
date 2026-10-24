@@ -97,15 +97,31 @@ uint32_t VulkanVertex::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFla
 	throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-void VulkanVertex::copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size, vk::raii::CommandPool& commandPool, vk::raii::Device& device, vk::raii::Queue& queue)
+vk::raii::CommandBuffer VulkanVertex::beginSingleTimeCommands(vk::raii::CommandPool& commandPool, vk::raii::Device& device)
 {
 	vk::CommandBufferAllocateInfo allocInfo{ .commandPool = commandPool, .level = vk::CommandBufferLevel::ePrimary, .commandBufferCount = 1 };
-	vk::raii::CommandBuffer commandCopyBuffer = std::move(device.allocateCommandBuffers(allocInfo).front());
-	commandCopyBuffer.begin({ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
-	commandCopyBuffer.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy(0, 0, size));
-	commandCopyBuffer.end();
-	queue.submit(vk::SubmitInfo{ .commandBufferCount = 1, .pCommandBuffers = &*commandCopyBuffer }, nullptr);
+	vk::raii::CommandBuffer       commandBuffer = std::move(vk::raii::CommandBuffers(device, allocInfo).front());
+
+	vk::CommandBufferBeginInfo beginInfo{ .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit };
+	commandBuffer.begin(beginInfo);
+
+	return std::move(commandBuffer);
+}
+
+void VulkanVertex::endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer, vk::raii::Queue& queue)
+{
+	commandBuffer.end();
+
+	vk::SubmitInfo submitInfo{ .commandBufferCount = 1, .pCommandBuffers = &*commandBuffer };
+	queue.submit(submitInfo, nullptr);
 	queue.waitIdle();
+}
+
+void VulkanVertex::copyBuffer(vk::raii::Buffer& srcBuffer, vk::raii::Buffer& dstBuffer, vk::DeviceSize size, vk::raii::CommandPool& commandPool, vk::raii::Device& device, vk::raii::Queue& queue)
+{
+	vk::raii::CommandBuffer commandCopyBuffer = beginSingleTimeCommands(commandPool, device);
+	commandCopyBuffer.copyBuffer(*srcBuffer, *dstBuffer, vk::BufferCopy{ .size = size });
+	endSingleTimeCommands(std::move(commandCopyBuffer), queue);
 }
 
 

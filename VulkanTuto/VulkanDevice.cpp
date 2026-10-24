@@ -38,10 +38,9 @@ bool VulkanDevice::isDeviceSuitable(vk::raii::PhysicalDevice const& physicalDevi
 			});
 
 	auto features = physicalDevice.template getFeatures2<vk::PhysicalDeviceFeatures2,
-		vk::PhysicalDeviceVulkan11Features,
 		vk::PhysicalDeviceVulkan13Features,
 		vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
-	bool supportsRequiredFeatures = features.template get<vk::PhysicalDeviceVulkan11Features>().shaderDrawParameters &&
+	bool supportsRequiredFeatures = features.template get<vk::PhysicalDeviceFeatures2>().features.samplerAnisotropy &&
 		features.template get<vk::PhysicalDeviceVulkan13Features>().dynamicRendering &&
 		features.template get<vk::PhysicalDeviceVulkan13Features>().synchronization2 &&
 		features.template get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>().extendedDynamicState;
@@ -98,16 +97,10 @@ void VulkanDevice::createLogicalDevice()
 		.pQueuePriorities = &queuePriority
 	};
 
-	vk::StructureChain<
-		vk::PhysicalDeviceFeatures2,
-		vk::PhysicalDeviceVulkan11Features,
-		vk::PhysicalDeviceVulkan13Features,
-		vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT
-	> featureChain = {
-		{},
-		{.shaderDrawParameters = true},
-		{ .synchronization2 = true, .dynamicRendering = true },
-		{.extendedDynamicState = true}
+	vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT> featureChain = {
+				{ .features = { .samplerAnisotropy = true } },
+				{ .synchronization2 = true, .dynamicRendering = true },
+				{ .extendedDynamicState = true }
 	};
 
 	vk::DeviceCreateInfo deviceCreateInfo

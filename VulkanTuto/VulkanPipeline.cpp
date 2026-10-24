@@ -100,16 +100,23 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 
 void VulkanPipeline::createDescriptorSetLayout(vk::raii::Device& device)
 {
-	vk::DescriptorSetLayoutBinding uboLayoutBinding = {
-		.binding = 0,
-		.descriptorType = vk::DescriptorType::eUniformBuffer,
-		.descriptorCount = 1,
-		.stageFlags = vk::ShaderStageFlagBits::eVertex
+	std::array<vk::DescriptorSetLayoutBinding, 2> bindings = {
+		vk::DescriptorSetLayoutBinding{
+			.binding = 0,
+			.descriptorType = vk::DescriptorType::eUniformBuffer,
+			.descriptorCount = 1,
+			.stageFlags = vk::ShaderStageFlagBits::eVertex
+		},
+		vk::DescriptorSetLayoutBinding{
+			.binding = 1,
+			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+			.descriptorCount = 1,
+			.stageFlags = vk::ShaderStageFlagBits::eFragment // Généralement utilisé dans le fragment shader
+		}
 	};
 	vk::DescriptorSetLayoutCreateInfo layoutInfo = {
-		.bindingCount = 1,
-		.pBindings = &uboLayoutBinding
+		.bindingCount = static_cast<uint32_t>(bindings.size()),
+		.pBindings = bindings.data()
 	};
 	descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
-
 }

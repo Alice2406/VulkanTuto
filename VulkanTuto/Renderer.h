@@ -7,6 +7,7 @@
 #include "VulkanDraw.h"
 #include "VulkanVertex.h"
 #include "VulkanDescriptor.h"
+#include "VulkanTextures.h"
 
 class Renderer
 {
@@ -25,5 +26,6 @@ private:
 	VulkanDraw vulkanDraw;
 	VulkanVertex vulkanVertex;
 	VulkanDescriptor vulkanDescriptor;
+	VulkanTextures vulkanTextures;
 };
 
