@@ -15,7 +15,8 @@ void VulkanTextures::Init(VulkanVertex& vertex, vk::raii::Device& device, vk::ra
 
 void VulkanTextures::createTextureImage(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
 {
-	int            texWidth, texHeight, texChannels;
+	std::cout << "Loading texture image..." << std::endl;
+	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels = stbi_load("../textures/texture.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
@@ -111,13 +112,13 @@ void VulkanTextures::copyBufferToImage(vk::raii::CommandBuffer& commandBuffer, c
 	commandBuffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, region);
 }
 
-vk::raii::ImageView VulkanTextures::createImageView(vk::Image const& image, vk::Format format, vk::raii::Device& device)
+vk::raii::ImageView VulkanTextures::createImageView(vk::Image const& image, vk::Format format, vk::ImageAspectFlags aspectFlags, vk::raii::Device& device)
 {
 	vk::ImageViewCreateInfo viewInfo{
-		.image = image,
-		.viewType = vk::ImageViewType::e2D,
-		.format = format,
-		.subresourceRange = { .aspectMask = vk::ImageAspectFlagBits::eColor, .baseMipLevel = 0, .levelCount = 1, .baseArrayLayer = 0, .layerCount = 1 } };
+				.image = image,
+				.viewType = vk::ImageViewType::e2D,
+				.format = format,
+				.subresourceRange = { .aspectMask = aspectFlags, .baseMipLevel = 0, .levelCount = 1, .baseArrayLayer = 0, .layerCount = 1 } };
 	return vk::raii::ImageView(device, viewInfo);
 }
 void VulkanTextures::createImageViews(std::vector<vk::raii::ImageView>& swapChainImageViews, std::vector<vk::Image>& swapChainImages, vk::SurfaceFormatKHR& swapChainSurfaceFormat, vk::raii::Device& device)
@@ -127,12 +128,13 @@ void VulkanTextures::createImageViews(std::vector<vk::raii::ImageView>& swapChai
 	swapChainImageViews.reserve(swapChainImages.size());
 	for (auto& image : swapChainImages)
 	{
-		swapChainImageViews.emplace_back(createImageView(image, swapChainSurfaceFormat.format, device));
+		swapChainImageViews.emplace_back(createImageView(image, swapChainSurfaceFormat.format, vk::ImageAspectFlagBits::eColor, device));
 	}
 }
 
 void VulkanTextures::createTextureSampler(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device)
 {
+	std::cout << "Creating texture sampler..." << std::endl;
 	vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
 	vk::SamplerCreateInfo        samplerInfo{ .magFilter = vk::Filter::eLinear,
 											 .minFilter = vk::Filter::eLinear,
@@ -150,6 +152,7 @@ void VulkanTextures::createTextureSampler(vk::raii::PhysicalDevice& physicalDevi
 
 void VulkanTextures::createTextureImageView(vk::raii::Device &device)
 {
-	textureImageView = createImageView(*textureImage, vk::Format::eR8G8B8A8Srgb, device);
+	std::cout << "Creating texture image view..." << std::endl;
+	textureImageView = createImageView(*textureImage, vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, device);
 }
 

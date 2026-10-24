@@ -1,4 +1,5 @@
 #include "VulkanPipeline.h"
+#include "VulkanDepth.h"
 #include <fstream>
 #define GLFW_INCLUDE_VULKAN
 
@@ -6,10 +7,11 @@
 #include "GLFW/glfw3.h"
 #include "Vertex.h"
 
-void VulkanPipeline::Init(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat)
+void VulkanPipeline::Init(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat, vk::raii::PhysicalDevice physicalDevice, VulkanDepth& depth)
 {
+	vulkanDepth = &depth;
 	createDescriptorSetLayout(device);
-	createGraphicsPipeline(device, surfaceFormat);
+	createGraphicsPipeline(device, surfaceFormat, physicalDevice);
 }
 
 static std::vector<char> readFile(const std::string& filename) {
@@ -30,7 +32,7 @@ vk::raii::ShaderModule createShaderModule(const std::vector<char>& code, vk::rai
 	vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast<const uint32_t*>(code.data()) }; //reinterpret_cast pour convertir le pointeur de char en pointeur de uint32_t
 	return vk::raii::ShaderModule(device, createInfo);
 }
-void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat)
+void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat, vk::raii::PhysicalDevice physicalDevice)
 {
 	std::cout << "Creating Graphics Pipeline..." << std::endl;
 	vk::raii::ShaderModule shaderModule = createShaderModule(readFile("../shaders/slang.spv"), device);
@@ -66,6 +68,13 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 
 	vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False }; //on ne veut pas d'anti-aliasing
 
+	vk::PipelineDepthStencilStateCreateInfo depthStencil{
+	.depthTestEnable = vk::True,
+	.depthWriteEnable = vk::True,
+	.depthCompareOp = vk::CompareOp::eLess,
+	.depthBoundsTestEnable = vk::False,
+	.stencilTestEnable = vk::False };
+
 	vk::PipelineColorBlendAttachmentState colorBlendAttachment{
 		.blendEnable = vk::False,
 		.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA };
@@ -81,6 +90,9 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 	pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
 
 	vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &surfaceFormat.format };
+
+	vk::Format depthFormat = vulkanDepth->findDepthFormat(physicalDevice);
+
 	vk::StructureChain<vk::GraphicsPipelineCreateInfo, vk::PipelineRenderingCreateInfo> pipelineCreateInfoChain = {
 	{ .stageCount = 2,
 	 .pStages = shaderStages,
@@ -89,11 +101,12 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 	 .pViewportState = &viewportState,
 	 .pRasterizationState = &rasterizer,
 	 .pMultisampleState = &multisampling,
+	 .pDepthStencilState = &depthStencil,
 	 .pColorBlendState = &colorBlending,
 	 .pDynamicState = &dynamicState,
 	 .layout = pipelineLayout,
 	 .renderPass = nullptr },
-	{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &surfaceFormat.format } };
+	{ .colorAttachmentCount = 1, .pColorAttachmentFormats = &surfaceFormat.format, .depthAttachmentFormat = depthFormat } };
 
 	graphicsPipeline = vk::raii::Pipeline(device, nullptr, pipelineCreateInfoChain.get<vk::GraphicsPipelineCreateInfo>());
 }

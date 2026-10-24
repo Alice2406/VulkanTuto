@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "GLFW/glfw3.h"
+#include "VulkanDepth.h"
 
 void VulkanSwapChain::Init(vk::raii::PhysicalDevice &physicalDevice, vk::raii::Device &device, vk::raii::SurfaceKHR &surface, GLFWwindow* window)
 {
@@ -21,8 +22,9 @@ static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfac
 	return minImageCount;
 }
 
-void VulkanSwapChain::recreateSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, GLFWwindow* window)
+void VulkanSwapChain::recreateSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, VulkanDepth& depth, GLFWwindow* window)
 {
+	vulkanDepth = &depth;
 	int width = 0;
 	int height = 0;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -38,6 +40,7 @@ void VulkanSwapChain::recreateSwapChain(vk::raii::PhysicalDevice& physicalDevice
 	cleanupSwapChain();
 	createSwapChain(physicalDevice, device, surface, window);
 	createImageViews(device);
+	vulkanDepth->createDepthResources(physicalDevice, swapChainExtent, device);
 }
 
 void VulkanSwapChain::cleanupSwapChain()

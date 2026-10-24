@@ -4,6 +4,7 @@
 #include "VulkanPipeline.h"
 #include "VulkanVertex.h"
 #include "VulkanDescriptor.h"
+#include "VulkanDepth.h"
 #define GLFW_INCLUDE_VULKAN
 
 #include <iostream>
@@ -14,13 +15,14 @@
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-void VulkanDraw::Init(VulkanDevice& device, VulkanSwapChain& swapChain, VulkanPipeline& pipeline, VulkanVertex& vertex, VulkanDescriptor& descriptor, GLFWwindow* window)
+void VulkanDraw::Init(VulkanDevice& device, VulkanSwapChain& swapChain, VulkanPipeline& pipeline, VulkanVertex& vertex, VulkanDescriptor& descriptor, VulkanDepth& depth, GLFWwindow* window)
 {
     vulkanDevice = &device;
     vulkanSwapChain = &swapChain;
     vulkanPipeline = &pipeline;
     vulkanVertex = &vertex;
 	vulkanDescriptor = &descriptor;
+	vulkanDepth = &depth;
 
     createCommandPool();
 }
@@ -86,7 +88,7 @@ void VulkanDraw::drawFrame(GLFWwindow* window)
 
     if (result == vk::Result::eErrorOutOfDateKHR)
     {
-        vulkanSwapChain->recreateSwapChain(vulkanDevice->GetPhysicalDevice(), device, vulkanDevice->GetSurface(), window);
+        vulkanSwapChain->recreateSwapChain(vulkanDevice->GetPhysicalDevice(), device, vulkanDevice->GetSurface(), *vulkanDepth, window);
         return;
     }
     if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
@@ -135,7 +137,7 @@ void VulkanDraw::drawFrame(GLFWwindow* window)
     if (presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR || framebufferResized)
     {
         framebufferResized = false;
-        vulkanSwapChain->recreateSwapChain(vulkanDevice->GetPhysicalDevice(), device, vulkanDevice->GetSurface(), window);
+        vulkanSwapChain->recreateSwapChain(vulkanDevice->GetPhysicalDevice(), device, vulkanDevice->GetSurface(), *vulkanDepth, window);
     }
     else if (presentResult != vk::Result::eSuccess)
     {
@@ -152,22 +154,34 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
     auto swapChainExtent = vulkanSwapChain->GetSwapChainExtent();
     auto& graphicsPipeline = vulkanPipeline->GetGraphicsPipeline();
 	auto& pipelineLayout = vulkanPipeline->GetPipelineLayout();
+	auto& depthImage = vulkanDepth->GetDepthImage();
     auto& commandBuffer = commandBuffers[frameIndex];
 
 	commandBuffer.begin({});
 
     transition_image_layout(
-        imageIndex,
+        swapChainImages[imageIndex],
         vk::ImageLayout::eUndefined,
         vk::ImageLayout::eColorAttachmentOptimal,
         {},
         vk::AccessFlagBits2::eColorAttachmentWrite,
         vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits2::eColorAttachmentOutput
+        vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        vk::ImageAspectFlagBits::eColor
     );
 
-    vk::ClearValue clearColor =
-        vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+    transition_image_layout(
+        *depthImage,
+        vk::ImageLayout::eUndefined,
+        vk::ImageLayout::eDepthAttachmentOptimal,
+        vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+        vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+        vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+        vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
+        vk::ImageAspectFlagBits::eDepth);
+
+    vk::ClearValue clearColor = vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f);
+    vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
     vk::RenderingAttachmentInfo attachmentInfo{
 		.imageView = swapChainImageViews[imageIndex], //utilise l'image de swapchain
@@ -177,12 +191,21 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
         .clearValue = clearColor
     };
 
+
+    vk::RenderingAttachmentInfo depthAttachmentInfo = {
+        .imageView = vulkanDepth->GetDepthImageView(),
+        .imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
+        .loadOp = vk::AttachmentLoadOp::eClear,
+        .storeOp = vk::AttachmentStoreOp::eDontCare,
+        .clearValue = clearDepth };
+
     vk::RenderingInfo renderingInfo = {
         .renderArea = { .offset = { 0, 0 }, .extent = swapChainExtent },
         .layerCount = 1,
         .colorAttachmentCount = 1,
-        .pColorAttachments = &attachmentInfo };
-
+        .pColorAttachments = &attachmentInfo, 
+		.pDepthAttachment = &depthAttachmentInfo
+    };
 
     commandBuffer.beginRendering(renderingInfo);
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *graphicsPipeline);
@@ -195,13 +218,14 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
     commandBuffer.endRendering();
 
     transition_image_layout(
-        imageIndex,
+        swapChainImages[imageIndex],
         vk::ImageLayout::eColorAttachmentOptimal,
         vk::ImageLayout::ePresentSrcKHR,
         vk::AccessFlagBits2::eColorAttachmentWrite,
         {},
         vk::PipelineStageFlagBits2::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits2::eBottomOfPipe
+        vk::PipelineStageFlagBits2::eBottomOfPipe,
+        vk::ImageAspectFlagBits::eColor
     );
 
     commandBuffer.end();
@@ -220,35 +244,27 @@ void VulkanDraw::updateUniformBuffer(uint32_t currentImage)
 	memcpy(vulkanVertex->GetUniformBuffersMapped()[currentImage], &ubo, sizeof(ubo));
 }
 
-void VulkanDraw::transition_image_layout(uint32_t imageIndex, vk::ImageLayout old_layout, vk::ImageLayout new_layout, vk::AccessFlags2 src_access_mask, vk::AccessFlags2 dst_access_mask, vk::PipelineStageFlags2 src_stage_mask, vk::PipelineStageFlags2 dst_stage_mask)
+void VulkanDraw::transition_image_layout(vk::Image image, vk::ImageLayout old_layout, vk::ImageLayout new_layout, vk::AccessFlags2 src_access_mask, vk::AccessFlags2 dst_access_mask, vk::PipelineStageFlags2 src_stage_mask, vk::PipelineStageFlags2 dst_stage_mask, vk::ImageAspectFlags image_aspect_flags)
 {
-    auto& swapChainImages =
-        vulkanSwapChain->GetSwapChainImages();
-
     vk::ImageMemoryBarrier2 barrier = {
-        .srcStageMask = src_stage_mask,
-        .srcAccessMask = src_access_mask,
-        .dstStageMask = dst_stage_mask,
-        .dstAccessMask = dst_access_mask,
-        .oldLayout = old_layout,
-        .newLayout = new_layout,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = swapChainImages[imageIndex],
-        .subresourceRange = {
-            .aspectMask = vk::ImageAspectFlagBits::eColor,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1
-        }
-    };
-
+                .srcStageMask = src_stage_mask,
+                .srcAccessMask = src_access_mask,
+                .dstStageMask = dst_stage_mask,
+                .dstAccessMask = dst_access_mask,
+                .oldLayout = old_layout,
+                .newLayout = new_layout,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = image,
+                .subresourceRange = {
+                    .aspectMask = image_aspect_flags,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1 } };
     vk::DependencyInfo dependency_info = {
         .dependencyFlags = {},
         .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier
-    };
-
+        .pImageMemoryBarriers = &barrier };
     commandBuffers[frameIndex].pipelineBarrier2(dependency_info);
 }

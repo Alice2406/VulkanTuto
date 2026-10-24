@@ -8,6 +8,7 @@
 #include "VulkanVertex.h"
 #include "VulkanDescriptor.h"
 #include "VulkanTextures.h"
+#include "VulkanDepth.h"
 
 class Renderer
 {
@@ -27,5 +28,6 @@ private:
 	VulkanVertex vulkanVertex;
 	VulkanDescriptor vulkanDescriptor;
 	VulkanTextures vulkanTextures;
+	VulkanDepth vulkanDepth;
 };
 

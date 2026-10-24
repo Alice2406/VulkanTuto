@@ -6,12 +6,13 @@ class VulkanSwapChain;
 class VulkanPipeline;
 class VulkanVertex;
 class VulkanDescriptor;
+class VulkanDepth;
 
 class VulkanDraw
 {
 public:
 
-	void Init(VulkanDevice& device,VulkanSwapChain& swapChain,VulkanPipeline& pipeline,VulkanVertex& vertex,VulkanDescriptor& descriptor, GLFWwindow* window);
+	void Init(VulkanDevice& device,VulkanSwapChain& swapChain,VulkanPipeline& pipeline,VulkanVertex& vertex,VulkanDescriptor& descriptor, VulkanDepth& depth, GLFWwindow* window);
 	void InitCommandBuffers();
 	vk::raii::CommandPool& GetCommandPool() { return commandPool; }
 	void drawFrame(GLFWwindow* window);
@@ -25,6 +26,7 @@ private:
 	VulkanPipeline* vulkanPipeline = nullptr;
 	VulkanVertex* vulkanVertex = nullptr;
 	VulkanDescriptor* vulkanDescriptor = nullptr;
+	VulkanDepth* vulkanDepth = nullptr;
 
 	uint32_t frameIndex = 0;
 	vk::raii::CommandPool commandPool = nullptr;
@@ -39,6 +41,6 @@ private:
 	void createSyncObjects();
 	void recordCommandBuffer(uint32_t imageIndex);
 	void updateUniformBuffer(uint32_t imageIndex);
-	void transition_image_layout(uint32_t imageIndex, vk::ImageLayout old_layout, vk::ImageLayout new_layout, vk::AccessFlags2 src_access_mask, vk::AccessFlags2 dst_access_mask, vk::PipelineStageFlags2 src_stage_mask, vk::PipelineStageFlags2 dst_stage_mask);
+	void transition_image_layout(vk::Image image, vk::ImageLayout old_layout, vk::ImageLayout new_layout, vk::AccessFlags2 src_access_mask, vk::AccessFlags2 dst_access_mask, vk::PipelineStageFlags2 src_stage_mask, vk::PipelineStageFlags2 dst_stage_mask, vk::ImageAspectFlags image_aspect_flags);
 };
 

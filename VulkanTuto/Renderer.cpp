@@ -9,8 +9,9 @@ void Renderer::Init(GLFWwindow* window)
 	vulkanInstance.CreateInstance();
 	vulkanDevice.Init(vulkanInstance.GetInstance(), window);
 	vulkanSwapChain.Init(vulkanDevice.GetPhysicalDevice(), vulkanDevice.GetDevice(), vulkanDevice.GetSurface(), window);
-	vulkanPipeline.Init(vulkanDevice.GetDevice(), vulkanSwapChain.GetSurfaceFormat());
-	vulkanDraw.Init(vulkanDevice, vulkanSwapChain, vulkanPipeline, vulkanVertex, vulkanDescriptor, window);
+	vulkanPipeline.Init(vulkanDevice.GetDevice(), vulkanSwapChain.GetSurfaceFormat(), vulkanDevice.GetPhysicalDevice(), vulkanDepth);
+	vulkanDraw.Init(vulkanDevice, vulkanSwapChain, vulkanPipeline, vulkanVertex, vulkanDescriptor, vulkanDepth, window);
+	vulkanDepth.Init(vulkanDevice.GetPhysicalDevice(), vulkanSwapChain.GetSwapChainExtent(), vulkanTextures, vulkanDevice.GetDevice());
 	vulkanTextures.Init(vulkanVertex, vulkanDevice.GetDevice(), vulkanDevice.GetPhysicalDevice(), vulkanDraw.GetCommandPool(), vulkanDevice.GetQueue());
 	vulkanVertex.Init(vulkanDevice.GetDevice(), vulkanDevice.GetPhysicalDevice(), vulkanDraw.GetCommandPool(), vulkanDevice.GetQueue());
 	vulkanDescriptor.Init(vulkanDevice.GetDevice(), vulkanPipeline.GetDescriptorSetLayout(), vulkanVertex.GetUniformBuffers(), vulkanTextures.getTextureImageView(), vulkanTextures.getTextureSampler());
