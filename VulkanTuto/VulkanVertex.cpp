@@ -7,8 +7,11 @@
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-void VulkanVertex::Init(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
+void VulkanVertex::Init(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue, const std::vector<Vertex>& inputVertices, const std::vector<uint16_t>& inputIndices)
 {
+	vertices = inputVertices;
+	indices = inputIndices;
+
 	createVertexBuffer(device, physicalDevice, commandPool, queue);
 	createIndexBuffer(device, physicalDevice, commandPool, queue);
 	createUniformBuffers(device, physicalDevice);

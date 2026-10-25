@@ -14,7 +14,7 @@ class Renderer
 {
 public:
 
-	void Init(GLFWwindow* window);
+	void Init(GLFWwindow* window, const std::vector<Vertex>& vertices, const std::vector<uint16_t>& indices);
 	void DrawFrame(GLFWwindow* window);
 	VulkanDraw& GetVulkanDraw() { return vulkanDraw; }
 	void WaitIdle();

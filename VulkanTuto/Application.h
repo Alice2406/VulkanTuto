@@ -10,7 +10,7 @@ public :
 	int height = 600;
 	GLFWwindow* window = nullptr;
 
-	void Init();
+	void Init(const std::vector<Vertex>& vertices, const std::vector<uint16_t>& indices);
 	void Run();
 	void Destroy();
 
@@ -24,7 +24,7 @@ private:
 		ren->GetVulkanDraw().framebufferResized = true;
 	}
 	void InitWindow();
-	void InitVulkan();
+	void InitVulkan(const std::vector<Vertex>& vertices, const std::vector<uint16_t>& indices);
 	void DestroyWindow();
 	void DestroyVulkan();
 

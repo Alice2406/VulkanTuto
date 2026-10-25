@@ -3,10 +3,10 @@
 constexpr uint32_t WIDTH = 800;
 constexpr uint32_t HEIGHT = 600;
 
-void Application::Init()
+void Application::Init(const std::vector<Vertex>& vertices, const std::vector<uint16_t>& indices)
 {
     InitWindow();
-    InitVulkan();
+    InitVulkan(vertices, indices);
 }
 
 void Application::Run()
@@ -38,9 +38,9 @@ void Application::InitWindow()
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
-void Application::InitVulkan()
+void Application::InitVulkan(const std::vector<Vertex>& vertices, const std::vector<uint16_t>& indices)
 {
-    renderer.Init(window);
+    renderer.Init(window, vertices, indices);
 }
 
 void Application::DestroyWindow()

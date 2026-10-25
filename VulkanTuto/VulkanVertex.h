@@ -5,7 +5,7 @@
 class VulkanVertex
 {
 public:
-	void Init(vk::raii::Device &device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue);
+	void Init(vk::raii::Device &device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue, const std::vector<Vertex>& inputVertices, const std::vector<uint16_t>& inputIndices);
 	vk::raii::Buffer& GetVertexBuffer() { return vertexBuffer; }
 	vk::raii::Buffer& GetIndexBuffer() { return indexBuffer; }
 	std::size_t GetVertexCount() { return vertices.size(); }
@@ -18,53 +18,54 @@ public:
 	void endSingleTimeCommands(vk::raii::CommandBuffer&& commandBuffer, vk::raii::Queue& queue);
 
 private:
-
-    const std::vector<Vertex> vertices = {
-        // Face Avant
-        { { -0.5f, -0.5f,  0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 1.0f } },
-        { { 0.5f, -0.5f,  0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 1.0f } },
-        { { 0.5f,  0.5f,  0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f } },
-        { { -0.5f,  0.5f,  0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
-
-        // Face Arrière
-        { { 0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 1.0f } },
-        { { -0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 1.0f } },
-        { { -0.5f,  0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f } },
-        { { 0.5f,  0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
-
-        // Face Dessus
-        { { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-        { { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-        { { 0.5f, -0.5f,  0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-        { { -0.5f, -0.5f,  0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-
-        // Face Dessous
-        { { -0.5f,  0.5f,  0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-        { { 0.5f,  0.5f,  0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-        { { 0.5f,  0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-        { { -0.5f,  0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-
-        // Face Droite
-        { { 0.5f, -0.5f,  0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-        { { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-        { { 0.5f,  0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-        { { 0.5f,  0.5f,  0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-
-        // Face Gauche
-        { { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-        { { -0.5f, -0.5f,  0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-        { { -0.5f,  0.5f,  0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-        { { -0.5f,  0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } }
-    };
-
-const std::vector<uint16_t> indices = {
-    0,  1,  2,  2,  3,  0,    //Avant
-    4,  5,  6,  6,  7,  4,    //Arrière
-    8,  9,  10, 10, 11, 8,    //Dessus
-    12, 13, 14, 14, 15, 12,   //Dessous
-    16, 17, 18, 18, 19, 16,   //Droite
-    20, 21, 22, 22, 23, 20    //Gauche
-};
+	std::vector<Vertex> vertices;
+	std::vector<uint16_t> indices;
+//    const std::vector<Vertex> vertices = {
+//        // Face Avant
+//        { { -0.5f, -0.5f,  0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 1.0f } },
+//        { { 0.5f, -0.5f,  0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 1.0f } },
+//        { { 0.5f,  0.5f,  0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f } },
+//        { { -0.5f,  0.5f,  0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
+//
+//        // Face Arrière
+//        { { 0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 1.0f } },
+//        { { -0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 1.0f } },
+//        { { -0.5f,  0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f } },
+//        { { 0.5f,  0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f } },
+//
+//        // Face Dessus
+//        { { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
+//        { { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
+//        { { 0.5f, -0.5f,  0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+//        { { -0.5f, -0.5f,  0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
+//
+//        // Face Dessous
+//        { { -0.5f,  0.5f,  0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
+//        { { 0.5f,  0.5f,  0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
+//        { { 0.5f,  0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+//        { { -0.5f,  0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
+//
+//        // Face Droite
+//        { { 0.5f, -0.5f,  0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
+//        { { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
+//        { { 0.5f,  0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+//        { { 0.5f,  0.5f,  0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
+//
+//        // Face Gauche
+//        { { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
+//        { { -0.5f, -0.5f,  0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
+//        { { -0.5f,  0.5f,  0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+//        { { -0.5f,  0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } }
+//    };
+//
+//const std::vector<uint16_t> indices = {
+//    0,  1,  2,  2,  3,  0,    //Avant
+//    4,  5,  6,  6,  7,  4,    //Arrière
+//    8,  9,  10, 10, 11, 8,    //Dessus
+//    12, 13, 14, 14, 15, 12,   //Dessous
+//    16, 17, 18, 18, 19, 16,   //Droite
+//    20, 21, 22, 22, 23, 20    //Gauche
+//};
 	vk::raii::Buffer vertexBuffer = nullptr;
 	vk::raii::DeviceMemory vertexBufferMemory = nullptr;
 	vk::raii::Buffer       indexBuffer = nullptr;
