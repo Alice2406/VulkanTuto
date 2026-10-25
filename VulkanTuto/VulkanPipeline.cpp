@@ -1,11 +1,9 @@
 #include "VulkanPipeline.h"
 #include "VulkanDepth.h"
-#include <fstream>
-#define GLFW_INCLUDE_VULKAN
-
-#include <iostream>
-#include "GLFW/glfw3.h"
 #include "Vertex.h"
+
+#include <fstream>
+#include <iostream>
 
 void VulkanPipeline::Init(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat, vk::raii::PhysicalDevice physicalDevice, VulkanDepth& depth)
 {
@@ -15,13 +13,13 @@ void VulkanPipeline::Init(vk::raii::Device& device, vk::SurfaceFormatKHR& surfac
 }
 
 static std::vector<char> readFile(const std::string& filename) {
-	std::ifstream file(filename, std::ios::ate | std::ios::binary); //ouvre le fichier en mode binaire et commence la lecture à la fin du fichier
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
         throw std::runtime_error("failed to open file!");
     }
-	std::vector<char> buffer(file.tellg()); //allouer l'espace nécessaire pour le buffer en utilisant la taille du fichier (ce qui explique pourquoi on est a la fin du fichier)
-	file.seekg(0); //on se remet au debut du fichier
+	std::vector<char> buffer(file.tellg());
+	file.seekg(0);
 	file.read(buffer.data(), buffer.size());
 	file.close();
 	return buffer;
@@ -29,15 +27,16 @@ static std::vector<char> readFile(const std::string& filename) {
 
 vk::raii::ShaderModule createShaderModule(const std::vector<char>& code, vk::raii::Device& device)
 {
-	vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast<const uint32_t*>(code.data()) }; //reinterpret_cast pour convertir le pointeur de char en pointeur de uint32_t
+	vk::ShaderModuleCreateInfo createInfo{ .codeSize = code.size() * sizeof(char), .pCode = reinterpret_cast<const uint32_t*>(code.data()) };
 	return vk::raii::ShaderModule(device, createInfo);
 }
+
 void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::SurfaceFormatKHR& surfaceFormat, vk::raii::PhysicalDevice physicalDevice)
 {
 	std::cout << "Creating Graphics Pipeline..." << std::endl;
 	vk::raii::ShaderModule shaderModule = createShaderModule(readFile("../shaders/slang.spv"), device);
 	vk::PipelineShaderStageCreateInfo vertShaderStageInfo{ 
-		.stage = vk::ShaderStageFlagBits::eVertex,  //stage = type de shader
+		.stage = vk::ShaderStageFlagBits::eVertex,
 		.module = shaderModule,  
 		.pName = "vertMain" };
 	vk::PipelineShaderStageCreateInfo fragShaderStageInfo{ 
@@ -52,21 +51,21 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 															 .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
 															 .pVertexAttributeDescriptions = attributeDescriptions.data() };
 
-	std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor }; //on va changer le viewport et le scissor à chaque frame
+	std::vector<vk::DynamicState>      dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 	vk::PipelineDynamicStateCreateInfo dynamicState{ .dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()), .pDynamicStates = dynamicStates.data() };
 
 	vk::PipelineInputAssemblyStateCreateInfo inputAssembly{ .topology = vk::PrimitiveTopology::eTriangleList };
 	vk::PipelineViewportStateCreateInfo      viewportState{ .viewportCount = 1, .scissorCount = 1 };
 
-	vk::PipelineRasterizationStateCreateInfo rasterizer{ .depthClampEnable = vk::False, //on ne veut pas que les fragments soient coupés à la limite du viewport
+	vk::PipelineRasterizationStateCreateInfo rasterizer{ .depthClampEnable = vk::False,
 														.rasterizerDiscardEnable = vk::False, 
 														.polygonMode = vk::PolygonMode::eFill,
 														.cullMode = vk::CullModeFlagBits::eBack,
-														.frontFace = vk::FrontFace::eCounterClockwise, //on va dessiner les triangles dans le sens des aiguilles d'une montre
+														.frontFace = vk::FrontFace::eCounterClockwise,
 														.depthBiasEnable = vk::False,
 														.lineWidth = 1.0f };
 
-	vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False }; //on ne veut pas d'anti-aliasing
+	vk::PipelineMultisampleStateCreateInfo multisampling{ .rasterizationSamples = vk::SampleCountFlagBits::e1, .sampleShadingEnable = vk::False };
 
 	vk::PipelineDepthStencilStateCreateInfo depthStencil{
 	.depthTestEnable = vk::True,
@@ -113,6 +112,7 @@ void VulkanPipeline::createGraphicsPipeline(vk::raii::Device& device, vk::Surfac
 
 void VulkanPipeline::createDescriptorSetLayout(vk::raii::Device& device)
 {
+	std::cout << "Creating Descriptor Set Layout..." << std::endl;
 	std::array<vk::DescriptorSetLayoutBinding, 2> bindings = {
 		vk::DescriptorSetLayoutBinding{
 			.binding = 0,
@@ -124,7 +124,7 @@ void VulkanPipeline::createDescriptorSetLayout(vk::raii::Device& device)
 			.binding = 1,
 			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
 			.descriptorCount = 1,
-			.stageFlags = vk::ShaderStageFlagBits::eFragment // Généralement utilisé dans le fragment shader
+			.stageFlags = vk::ShaderStageFlagBits::eFragment
 		}
 	};
 	vk::DescriptorSetLayoutCreateInfo layoutInfo = {

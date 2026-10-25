@@ -1,7 +1,8 @@
 #include "VulkanDevice.h"
-#define GLFW_INCLUDE_VULKAN
 
 #include <iostream>
+
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
 void VulkanDevice::Init(vk::raii::Instance &instance, GLFWwindow* window)

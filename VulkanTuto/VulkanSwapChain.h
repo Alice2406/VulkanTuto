@@ -9,7 +9,6 @@ public :
 
 	void Init(vk::raii::PhysicalDevice &physicalDevice, vk::raii::Device &device, vk::raii::SurfaceKHR &surface, GLFWwindow* window);
 	void recreateSwapChain(vk::raii::PhysicalDevice& physicalDevice, vk::raii::Device& device, vk::raii::SurfaceKHR& surface, VulkanDepth& depth, GLFWwindow* window);
-	void Destroy();
 	vk::SurfaceFormatKHR& GetSurfaceFormat() { return swapChainSurfaceFormat; }
 	std::vector<vk::Image>& GetSwapChainImages() { return swapChainImages; }
 	std::vector<vk::raii::ImageView>& GetSwapChainImageViews() { return swapChainImageViews; }
@@ -17,6 +16,7 @@ public :
 	vk::raii::SwapchainKHR& GetSwapChain() { return swapChain; }
 
 private :
+
 	VulkanDepth* vulkanDepth = nullptr;
 	vk::raii::SwapchainKHR swapChain = nullptr;
 	std::vector<vk::Image> swapChainImages;

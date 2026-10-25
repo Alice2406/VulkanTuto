@@ -1,5 +1,7 @@
 #include "VulkanDescriptor.h"
 #include "Vertex.h"
+#include <iostream>
+
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 void VulkanDescriptor::Init(vk::raii::Device &device, vk::raii::DescriptorSetLayout &descriptorSetLayout, std::vector<vk::raii::Buffer>& uniformBuffers, vk::raii::ImageView &textureImageView, vk::raii::Sampler &textureSampler)
@@ -10,6 +12,7 @@ void VulkanDescriptor::Init(vk::raii::Device &device, vk::raii::DescriptorSetLay
 
 void VulkanDescriptor::createDescriptorPool(vk::raii::Device &device)
 {
+	std::cout << "Creating descriptor pool..." << std::endl;
 	std::array<vk::DescriptorPoolSize, 2> poolSizes = {
 			vk::DescriptorPoolSize{
 				.type = vk::DescriptorType::eUniformBuffer,
@@ -31,6 +34,7 @@ void VulkanDescriptor::createDescriptorPool(vk::raii::Device &device)
 
 void VulkanDescriptor::createDescriptorSets(vk::raii::DescriptorSetLayout &descriptorSetLayout, vk::raii::Device &device, std::vector<vk::raii::Buffer>& uniformBuffers, vk::raii::ImageView &textureImageView, vk::raii::Sampler &textureSampler)
 {
+	std::cout << "Creating descriptor sets..." << std::endl;
 	std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, *descriptorSetLayout);
 	vk::DescriptorSetAllocateInfo allocInfo{
 		.descriptorPool = descriptorPool,

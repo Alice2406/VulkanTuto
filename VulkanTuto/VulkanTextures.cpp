@@ -1,9 +1,10 @@
 #include "VulkanTextures.h"
-#define GLFW_INCLUDE_VULKAN
+#include "VulkanVertex.h"
 
 #include <iostream>
+
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
-#include "VulkanVertex.h"
 
 void VulkanTextures::Init(VulkanVertex& vertex, vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
 {

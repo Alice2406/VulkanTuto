@@ -1,9 +1,7 @@
 #include "VulkanDepth.h"
-#define GLFW_INCLUDE_VULKAN
-
 #include "VulkanTextures.h"
+
 #include <iostream>
-#include "GLFW/glfw3.h"
 
 void VulkanDepth::Init(vk::raii::PhysicalDevice &physicalDevice, vk::Extent2D swapChainExtent, VulkanTextures &textures, vk::raii::Device &device)
 {
@@ -15,7 +13,6 @@ void VulkanDepth::createDepthResources(vk::raii::PhysicalDevice &physicalDevice,
 {
 	std::cout << "Creating depth resources..." << std::endl;
     vk::Format depthFormat = findDepthFormat(physicalDevice);
-
     std::tie(depthImage, depthImageMemory) = vulkanTextures->createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal, device, physicalDevice);
     depthImageView = vulkanTextures->createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth, device);
 }
@@ -24,7 +21,6 @@ vk::Format VulkanDepth::findSupportedFormat(const std::vector<vk::Format>& candi
 {
     for (const auto format : candidates) {
         vk::FormatProperties props = physicalDevice.getFormatProperties(format);
-
         if (((tiling == vk::ImageTiling::eLinear) && ((props.linearTilingFeatures & features) == features)) ||
             ((tiling == vk::ImageTiling::eOptimal) && ((props.optimalTilingFeatures & features) == features)))
             return format;

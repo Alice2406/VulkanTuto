@@ -6,7 +6,6 @@ class VulkanInstance
 public:
 
 	void CreateInstance();
-	void Destroy();
 	vk::raii::Instance& GetInstance() { return instance; }
 
 private:

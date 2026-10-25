@@ -12,12 +12,12 @@ class VulkanDraw
 {
 public:
 
+	bool framebufferResized = false;
+
 	void Init(VulkanDevice& device,VulkanSwapChain& swapChain,VulkanPipeline& pipeline,VulkanVertex& vertex,VulkanDescriptor& descriptor, VulkanDepth& depth, GLFWwindow* window);
 	void InitCommandBuffers();
 	vk::raii::CommandPool& GetCommandPool() { return commandPool; }
 	void drawFrame(GLFWwindow* window);
-	void Destroy();
-	bool framebufferResized = false;
 
 private:
 

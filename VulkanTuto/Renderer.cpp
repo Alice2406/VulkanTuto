@@ -1,7 +1,6 @@
 #include "Renderer.h"
-#define GLFW_INCLUDE_VULKAN
 
-#include <iostream>
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
 void Renderer::Init(GLFWwindow* window)
@@ -27,9 +26,3 @@ void Renderer::WaitIdle()
 {
 	vulkanDevice.GetDevice().waitIdle();
 }
-
-void Renderer::Destroy()
-{
-}
-
-//Render Doc -> Debug GPU

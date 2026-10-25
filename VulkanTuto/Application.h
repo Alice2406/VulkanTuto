@@ -1,8 +1,6 @@
 #pragma once
-#include "Dependencies.h"
 #include "Renderer.h"
 #include "VulkanDraw.h"
-#include "VulkanDevice.h"
 
 class Application
 {
@@ -15,8 +13,11 @@ public :
 	void Init();
 	void Run();
 	void Destroy();
+
 private:
+
 	Renderer renderer;
+
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		auto ren = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));

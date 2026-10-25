@@ -13,13 +13,14 @@
 class Renderer
 {
 public:
+
 	void Init(GLFWwindow* window);
 	void DrawFrame(GLFWwindow* window);
 	VulkanDraw& GetVulkanDraw() { return vulkanDraw; }
 	void WaitIdle();
-	void Destroy();
 
 private:
+
 	VulkanInstance vulkanInstance;
 	VulkanDevice vulkanDevice;
 	VulkanSwapChain vulkanSwapChain;

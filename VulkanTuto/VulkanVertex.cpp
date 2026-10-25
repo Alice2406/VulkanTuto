@@ -1,8 +1,10 @@
 #include "VulkanVertex.h"
-#define GLFW_INCLUDE_VULKAN
 
 #include <iostream>
+
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
+
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 void VulkanVertex::Init(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
@@ -32,6 +34,7 @@ void VulkanVertex::createVertexBuffer(vk::raii::Device &device, vk::raii::Physic
 
 void VulkanVertex::createIndexBuffer(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice, vk::raii::CommandPool& commandPool, vk::raii::Queue& queue)
 {
+	std::cout << "Creating index buffer..." << std::endl;
 	vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
 	auto [stagingBuffer, stagingBufferMemory] =
@@ -49,6 +52,7 @@ void VulkanVertex::createIndexBuffer(vk::raii::Device& device, vk::raii::Physica
 
 void VulkanVertex::createUniformBuffers(vk::raii::Device& device, vk::raii::PhysicalDevice& physicalDevice)
 {
+	std::cout << "Creating uniform buffers..." << std::endl;
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		vk::DeviceSize bufferSize = sizeof(UniformBufferObject);

@@ -51,5 +51,5 @@ void Application::DestroyWindow()
 
 void Application::DestroyVulkan()
 {
-	renderer.Destroy();
+	renderer.WaitIdle();
 }

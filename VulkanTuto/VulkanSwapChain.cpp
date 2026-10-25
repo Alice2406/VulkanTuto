@@ -1,16 +1,16 @@
 #include "VulkanSwapChain.h"
-#define GLFW_INCLUDE_VULKAN
+#include "VulkanDepth.h"
 
 #include <iostream>
+
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
-#include "VulkanDepth.h"
 
 void VulkanSwapChain::Init(vk::raii::PhysicalDevice &physicalDevice, vk::raii::Device &device, vk::raii::SurfaceKHR &surface, GLFWwindow* window)
 {
 	createSwapChain(physicalDevice, device, surface, window);
 	createImageViews(device);
 }
-
 
 static uint32_t chooseSwapMinImageCount(vk::SurfaceCapabilitiesKHR const& surfaceCapabilities)
 {
@@ -116,7 +116,6 @@ vk::Extent2D VulkanSwapChain::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR&
 		std::clamp<uint32_t>(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
 	};
 }
-
 
 void VulkanSwapChain::createImageViews(vk::raii::Device& device)
 {

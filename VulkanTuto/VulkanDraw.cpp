@@ -5,10 +5,11 @@
 #include "VulkanVertex.h"
 #include "VulkanDescriptor.h"
 #include "VulkanDepth.h"
+
 #define GLFW_INCLUDE_VULKAN
 
-#include <iostream>
 #include "GLFW/glfw3.h"
+#include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
@@ -184,10 +185,10 @@ void VulkanDraw::recordCommandBuffer(uint32_t imageIndex)
     vk::ClearValue clearDepth = vk::ClearDepthStencilValue(1.0f, 0);
 
     vk::RenderingAttachmentInfo attachmentInfo{
-		.imageView = swapChainImageViews[imageIndex], //utilise l'image de swapchain
-		.imageLayout = vk::ImageLayout::eColorAttachmentOptimal, //layout de l'image
-		.loadOp = vk::AttachmentLoadOp::eClear, //efface l'image avant de dessiner
-		.storeOp = vk::AttachmentStoreOp::eStore, //stocke l'image
+		.imageView = swapChainImageViews[imageIndex],
+		.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+		.loadOp = vk::AttachmentLoadOp::eClear,
+		.storeOp = vk::AttachmentStoreOp::eStore,
         .clearValue = clearColor
     };
 
